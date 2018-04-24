@@ -21,28 +21,28 @@
     <script type="x-shader/x-fragment" src="js/fragmentShader.js" id="fragmentshader"></script>
     <script>
 
-        var generateTexture = function () {
+        // var generateTexture = function () {
 
-            var canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            var context = canvas.getContext('2d');
-            for (var i = 0; i < 20000; ++i) {
-                // r = hair 1/0
-                // g = length
-                // b = darkness
-                context.fillStyle = "rgba(255," + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + ",1)";
+        //     var canvas = document.createElement('canvas');
+        //     canvas.width = 256;
+        //     canvas.height = 256;
+        //     var context = canvas.getContext('2d');
+        //     for (var i = 0; i < 20000; ++i) {
+        //         // r = hair 1/0
+        //         // g = length
+        //         // b = darkness
+        //         context.fillStyle = "rgba(255," + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + ",1)";
 
-                context.fillRect((Math.random() * canvas.width), (Math.random() * canvas.height), 2, 2);
+        //         context.fillRect((Math.random() * canvas.width), (Math.random() * canvas.height), 2, 2);
 
-            }
-            return canvas;
-        }
+        //     }
+        //     return canvas;
+        // }
 
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 50);
         var renderer = new THREE.WebGLRenderer();
-        var texture = generateTexture();
+        //var texture = generateTexture();
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x444444);
@@ -52,41 +52,42 @@
 
 
         // Creating fur shaded mesh
-        var shells = 30;
+        // var shells = 30;
         var geometry = new THREE.BoxGeometry(1, 1, 1);
 
-        var vertexShader = document.getElementById('vertexshader').textContent;
-        var fragmentShader = document.getElementById('fragmentshader').textContent;
+        // var vertexShader = document.getElementById('vertexshader').textContent;
+        // var fragmentShader = document.getElementById('fragmentshader').textContent;
 
-        var cubeLayers = [];
+        // var cubeLayers = [];
 
-        for (var i = 0; i < shells; i++) {
-            var attributes = {};
+        // for (var i = 0; i < shells; i++) {
+        //     var attributes = {};
 
 
 
-            var uniforms = {
-                color: { type: "c", value: new THREE.Color(0xffffff) },
-                hairMap: { type: "t", value: texture },
-                // colorMap: { type: "t", value: color },
-                offset: { type: "f", value: i / shells },
-                globalTime: { type: "f", value: shaderTime },
-                gravity: { type: "v3", value: gravity }
-            };
+        //     var uniforms = {
+        //         color: { type: "c", value: new THREE.Color(0xffffff) },
+        //         hairMap: { type: "t", value: texture },
+        //         // colorMap: { type: "t", value: color },
+        //         offset: { type: "f", value: i / shells },
+        //         globalTime: { type: "f", value: shaderTime },
+        //         gravity: { type: "v3", value: gravity }
+        //     };
 
-            var mat = new THREE.ShaderMaterial({
-                uniforms: uniforms,
-                attributes: attributes,
-                vertexShader: vertexShader,
-                fragmentShader: fragmentShader,
-                transparent: true
-            })
+        //     var mat = new THREE.ShaderMaterial({
+        //         uniforms: uniforms,
+        //         attributes: attributes,
+        //         vertexShader: vertexShader,
+        //         fragmentShader: fragmentShader,
+        //         transparent: true
+        //     })
 
+            var mat = new THREE.MeshBasicMaterial();
 
             var cube = new THREE.Mesh(geometry, mat);
             scene.add(cube);
-            cubeLayers.push(cube);
-        }
+            // cubeLayers.push(cube);
+        // }
 
 
         var grav = new THREE.Vector3(1, -.75, 0);
@@ -100,20 +101,20 @@
             cube.rotation.x += 0.005;
             cube.rotation.y += 0.005;
 
-            time = Date.now();
-            delta = time - oldTime;
-            oldTime = time;
+            // time = Date.now();
+            // delta = time - oldTime;
+            // oldTime = time;
 
-            if (isNaN(delta) || delta > 1000 || delta == 0) {
-                delta = 1000 / 60;
-            }
+            // if (isNaN(delta) || delta > 1000 || delta == 0) {
+            //     delta = 1000 / 60;
+            // }
 
-            // var divider = delta/60;
-            shaderTime += delta * 0.005;
+            // // var divider = delta/60;
+            // shaderTime += delta * 0.005;
 
-            for (var i = 0; i < meshes.length; i++) {
-                meshes[i].material.uniforms.globalTime.value = shaderTime;
-            }
+            // for (var i = 0; i < meshes.length; i++) {
+            //     meshes[i].material.uniforms.globalTime.value = shaderTime;
+            // }
 
 
             requestAnimationFrame(render);
