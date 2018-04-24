@@ -22,86 +22,78 @@
         uniform float globalTime;
         uniform vec3 gravity;
 
-        // varying vec2 vertextUV;
-        varying vec3 vNormal;
+        varying vec2 vTexCoord;
+        varying vec3 vNorm;
 
         const float spacing = 12.0;
 
         void main()
         {
-            // Wind and gravity.
-            vec3 forceDir = vec3(sin(globalTime+position.x*0.05)*0.2,
+            // Calculate the effect of gravity and wind on the fur.
+            vec3 displacement = gravity + vec3(
+                sin(globalTime+position.x*0.05)*0.2,
                 cos(globalTime*0.7+position.y*0.04)*0.2,
-                sin(globalTime*0.7+position.y*0.04)*0.2);
+                sin(globalTime*0.7+position.y*0.04)*0.2
+            );
+            vec3 aNorm = normal;
+            aNorm.xyz += displacement*pow(offset, 3.0);
 
-            vec3 disp = gravity*forceDir;
+            // Calculate distance from original mesh.
+            vec3 point = position.xyz + normalize(aNorm)*offset*spacing;
 
-            float dispFactor = pow(offset, 3.0);
+            vNorm = normalize(normal*aNorm);
+            vTexCoord = uv;//*20.0;
 
-            vec3 aNormal = normal;//vNormal;
-
-            aNormal.xyz += disp*dispFactor;
-
-            // Layer offsets
-            vec3 animated = vec3(position.x, position.y, position.z) +
-                (normalize(aNormal) * offset * spacing);
-
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(animated, 1.0);;
-
+            gl_Position = projectionMatrix * (modelViewMatrix * vec4(point, 1.0));
         }
+
     </script>
     <script type="x-shader/x-fragment" id="fragmentshader">
-        uniform float offset;
+            uniform float offset;
+            uniform sampler2D hairMap;
+            uniform sampler2D colorMap;
+            uniform vec3 color;
+    
+            varying vec2 vTexCoord;
+            varying vec3 vNorm;
+    
+            void main()
+            {
+                vec4 hairProperties = texture2D(hairMap, vec2(vTexCoord.s, vTexCoord.t));
+                vec4 hairColor = texture2D(colorMap, vec2(vTexCoord.s, vTexCoord.t));
 
-        varying vec3 vNormal;
+                if (hairProperties.a <= 0.0 || hairProperties.g < offset)
+                {
+                //    discard;
+                }
 
-        void main()
-        {
-            // Red hair
-            vec4 hairColor = vec4(1,0,0,1);
-            // On white surface.
-            vec3 color = vec3(1,1,1);
-            vec4 col = vec4(1,1,1,1);
+                float shadow = mix(0.0, hairProperties.b * 1.2, offset);
+                vec3 light = vec3(0.1,1.0,0.3);
+                float diffuse = pow(max(0.25, dot(vNorm.xyz, light))*2.75, 1.4);
 
-            // If the fragment cannot be seen, discard it.
-            // if (hairColor.a <= 0.0 || hairColor.g < offset)
-            // {
-            //     discard;
-            // }
-
-            // Color shading is interpolated between the tip and the base.
-            float shadow = mix(0.0, hairColor.b * 1.2, offset);
-
-            vec3 light = vec3(0.1, 1.0, 0.3);
-            float diff = pow(max(0.25, dot(vNormal.xyz, light))*2.75, 1.4);
-
-            gl_FragColor = vec4(color /** col.xyz*/ * diff * shadow, 1.1-offset);
-        }
+                gl_FragColor = vec4(color * hairColor.xyz * diffuse * shadow, 1.1-offset);
+                //gl_FragColor = vec4(1,1,1,1);
+            }
     </script>
     <script>
+        // Generate texture information for hairs.
+        var canvas = document.createElement('canvas');
+        canvas.width = 256;
+        canvas.height = 256;
+        var context = canvas.getContext('2d');
+        for (var i = 0; i < 20000; ++i) {
+            // r = hair 1/0, g = length, b = darkness
+            context.fillStyle = "rgba(255," + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + ",1)";
+            context.fillRect((Math.random() * canvas.width), (Math.random() * canvas.height), 2, 2);
+        }
+        var hairPropertiesTexture = new THREE.Texture(canvas)
 
-        // var generateTexture = function () {
-
-        //     var canvas = document.createElement('canvas');
-        //     canvas.width = 256;
-        //     canvas.height = 256;
-        //     var context = canvas.getContext('2d');
-        //     for (var i = 0; i < 20000; ++i) {
-        //         // r = hair 1/0
-        //         // g = length
-        //         // b = darkness
-        //         context.fillStyle = "rgba(255," + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + ",1)";
-
-        //         context.fillRect((Math.random() * canvas.width), (Math.random() * canvas.height), 2, 2);
-
-        //     }
-        //     return canvas;
-        // }
+        // Load texture information for color from image file.
+        var colorTexture = new THREE.TextureLoader().load("purple.png");
 
         var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 50);
+        var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 300);
         var renderer = new THREE.WebGLRenderer();
-        //var texture = generateTexture();
 
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(0x444444);
@@ -110,54 +102,53 @@
 
 
 
-        // Creating fur shaded mesh
-        var shells = 5;
-        var geometry = new THREE.BoxBufferGeometry(1, 1, 1);
-
+        // Creating geometry for fur shaded mesh.
+        var shells = 30;
+        var geometry = new THREE.TorusBufferGeometry(3, 1, 16, 50);
+        geometry.applyMatrix(new THREE.Matrix4().scale(new THREE.Vector3(10, 10, 10)));
         var vertexShader = document.getElementById('vertexshader').textContent;
         var fragmentShader = document.getElementById('fragmentshader').textContent;
-
+        var shaderTime = 0;
         var cubeLayers = [];
-        var grav = new THREE.Vector3(1, -.75, 0);
+        var gravity = new THREE.Vector3(1, -.75, 0);
         for (var i = 0; i < shells; i++) {
-            //var attributes = {};
-
-
-
             var uniforms = {
-                // color: { type: "c", value: new THREE.Color(0xffffff) },
-                // hairMap: { type: "t", value: texture },
-                // colorMap: { type: "t", value: color },
-                offset: { type: "f", value: (i / shells)/3 },
+                color: { type: "c", value: new THREE.Color(0xffffff) },
+                hairMap: { type: "t", value: hairPropertiesTexture },
+                colorMap: { type: "t", value: colorTexture },
+                offset: { type: "f", value: (i / shells) },
                 globalTime: { type: "f", value: shaderTime },
-                gravity: { type: "v3", value: grav }
+                gravity: { type: "v3", value: gravity }
             };
 
             var mat = new THREE.ShaderMaterial({
                 uniforms: uniforms,
-                //attributes: attributes,
                 vertexShader: vertexShader,
                 fragmentShader: fragmentShader,
                 transparent: true
             })
 
-            //var mat = new THREE.MeshBasicMaterial();
-
+            //mat = new THREE.MeshNormalMaterial();
             var cube = new THREE.Mesh(geometry, mat);
+
+            //cube.matrixAutoUpdate = false; // Not sure why he's doing this.
+            cube.frustumCulled = false; // Presumably so we always see the whole mesh?
+
             scene.add(cube);
             cubeLayers.push(cube);
         }
 
 
 
+
+        // Animating the mesh.
         var delta;
         var time;
         var oldTime;
-        var shaderTime = 0;
-        camera.position.z = 10;
+        camera.position.z = 100;
 
         var render = function () {
-            for (var i = 0; i < shells; i++){
+            for (var i = 0; i < shells; i++) {
                 cubeLayers[i].rotation.x += 0.005;
                 cubeLayers[i].rotation.y += 0.005;
             }
@@ -168,8 +159,6 @@
             if (isNaN(delta) || delta > 1000 || delta == 0) {
                 delta = 1000 / 60;
             }
-
-            // var divider = delta/60;
             shaderTime += delta * 0.005;
 
             for (var i = 0; i < cubeLayers.length; i++) {
