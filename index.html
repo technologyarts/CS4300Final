@@ -62,9 +62,11 @@
     
             void main()
             {
+                // Get hair properties and color from textures.
                 vec4 hairProperties = texture2D(hairMap, vec2(vTexCoord.s, vTexCoord.t));
                 vec4 hairColor = texture2D(colorMap, vec2(vTexCoord.s, vTexCoord.t));
 
+                // Discard fragments that we shouldn't see.
                 if (hairProperties.a <= 0.0 || hairProperties.g < offset)
                 {
                     discard;
@@ -74,12 +76,14 @@
                 vec3 light = vec3(0.1,1.0,0.3);
                 float diffuse = pow(max(0.25, dot(vNorm.xyz, light))*2.75, 1.4);
 
-                gl_FragColor = vec4(color * hairColor.xyz * diffuse /* shadow*/, 1.1-offset);
-                //gl_FragColor = hairProperties;
+                gl_FragColor = vec4(color * hairColor.xyz * diffuse * shadow, 1.1-offset);
             }
     </script>
     <script>
-        // Generate texture information for hairs.
+        /* Generate texture information for hairs. This code is fully lifted from the example we were using,
+        but all it does is create a texture of strands, with random length and darkness.
+
+        */
         var canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 256;
