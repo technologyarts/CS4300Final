@@ -49,3 +49,4 @@ Future Considerations:
  - Loading arbitrary models.
  - Changing fur parameters (length, density, etc).
  - Loading fur parameters from designed texture on a uv-mapped model to create a realistic effect.
+ - Support higher res textures (lose the shag carpet look in favor of a fur appearance).
