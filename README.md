@@ -40,6 +40,7 @@ Our process worked like this:
     - https://www.youtube.com/watch?v=WRQey_qpJls
 
 Challenges:
+
 There were a couple of hang-ups that we did not anticipate beforehand. We started this project not realizing that fur is typically a multi-pass effect. We had intended to use a lot of our code from previous assignments, but because we needed multiple passes, we realized that much of the setup would have to be different. This contributed to the decision to rely on three.js to handle a lot of the setup.
 
 We also had some trouble following the example we were building off of. While it is extremely straightforward, it used an older version of three.js and some functions were deprecated or changed. Additionally, there are some slightly hidden facts about three that, while helpful, threw us off initially. The most notable of these is how three handles shader based materials. Our material is an instance of the ShaderMaterial class in three. This class a substantial amount of utility code to the shaders of materials that inherit from it (such as position and UV coordinates in vertex shaders). This meant that line numbers given by errors were wrong. It also led to naming conflicts (position is one of the names taken), which explained why the example named things the way it did.
