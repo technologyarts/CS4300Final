@@ -94,8 +94,7 @@
 
             context.fillRect((Math.random() * canvas.width), (Math.random() * canvas.height), 2, 2);
         }
-        var hairPropertiesTexture = new THREE.CanvasTexture(canvas)
-        console.log(hairPropertiesTexture);
+        var hairPropertiesTexture = new THREE.CanvasTexture(canvas);
         // Load texture information for color from image file.
         var colorTexture = new THREE.TextureLoader().load("./textures/purple.png");
 
