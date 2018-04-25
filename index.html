@@ -115,7 +115,7 @@
         var fragmentShader = document.getElementById('fragmentshader').textContent;
         var shaderTime = 0;
         var cubeLayers = [];
-        var gravity = new THREE.Vector3(.5, -.55, 0);
+        var gravity = new THREE.Vector3(.25, -.25, 0);
         for (var i = 0; i < shells; i++) {
             var uniforms = {
                 color: { type: "c", value: new THREE.Color(0xffffff) },
