@@ -45,6 +45,8 @@ There were a couple of hang-ups that we did not anticipate beforehand. We starte
 
 We also had some trouble following the example we were building off of. While it is extremely straightforward, it used an older version of three.js and some functions were deprecated or changed. Additionally, there are some slightly hidden facts about three that, while helpful, threw us off initially. The most notable of these is how three handles shader based materials. Our material is an instance of the ShaderMaterial class in three. This class a substantial amount of utility code to the shaders of materials that inherit from it (such as position and UV coordinates in vertex shaders). This meant that line numbers given by errors were wrong. It also led to naming conflicts (position is one of the names taken), which explained why the example named things the way it did.
 
+Lastly, the values the example was using for force were far too large for the model we used. Even after we had done it right, we didn't realize it unitl it occurred to us to change those values.
+
 Future Considerations:
  - Loading arbitrary models.
  - Changing fur parameters (length, density, etc).
