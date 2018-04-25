@@ -1,5 +1,7 @@
 CS 4300 Final Project:
 
+[![](http://img.youtube.com/vi/mrarFYbqlk0/0.jpg)](http://www.youtube.com/watch?v=mrarFYbqlk0 "WebGL Fur Shader")
+
 Team Members:
  * Samuel Vogel
  * Amanda Fode
